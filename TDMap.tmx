@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="32" height="24" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="tmw_desert_spacing" tilewidth="32" tileheight="32" spacing="1" margin="1">
+  <image source="tmw_desert_spacing.png" width="265" height="199"/>
+  <tile id="29">
+   <properties>
+    <property name="state" value="0"/>
+   </properties>
+  </tile>
+  <tile id="37">
+   <properties>
+    <property name="state" value="1"/>
+   </properties>
+  </tile>
+  <tile id="45">
+   <properties>
+    <property name="buildable" value="1"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="background" width="32" height="24">
+  <data encoding="base64" compression="zlib">
+   eJzVVrsSwCAI40sc+f9P7NKhp2hJyPXKwOJJEp46zGw0Nb+ti47sHQcwEfwMJsud9UVy9WYsxx96ppM98+nB2ZcaKv2JxlrVyeKy/JnZVmExfij/7j47+4p9mt2hqpyqfZgcKDVU3pXT+W7mFPyRn9uqY9ag3CMRturPceJF6qCsORLP/DZldSs1df1zXA5fXZE=
+  </data>
+ </layer>
+</map>
