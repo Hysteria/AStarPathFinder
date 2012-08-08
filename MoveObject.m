@@ -38,22 +38,24 @@
         return;
     }
     
-    _destination = destination;
     
-    CGPoint srcCoord = [[MapManager sharedMapManager] tileCoordForPosition:self.position];
-    AStarMapNode *srcNode = [[AStarPathFinder sharedPathFinder].map mapNodeWithCoord:srcCoord];
+    
+//    CGPoint srcCoord = [[MapManager sharedMapManager] tileCoordForPosition:self.position];
+//    CGPoint srcFixed = [[MapManager sharedMapManager] positionForTileCoordCenter:srcCoord];
+//    AStarMapNode *srcNode = [[AStarPathFinder sharedPathFinder].map mapNodeWithCoord:srcCoord];
     CGPoint destCoord = [[MapManager sharedMapManager] tileCoordForPosition:destination];
-    AStarMapNode *destNode = [[AStarPathFinder sharedPathFinder].map mapNodeWithCoord:destCoord];
-    
+//    AStarMapNode *destNode = [[AStarPathFinder sharedPathFinder].map mapNodeWithCoord:destCoord];
+    CGPoint destFixed = [[MapManager sharedMapManager] positionForTileCoordCenter:destCoord];
+    _destination = destFixed;    
     
     AStarPathFinder *apf = [AStarPathFinder sharedPathFinder];
-    NSArray *findPath = [[apf findPathFromSrc:srcNode toDest:destNode] retain];
-   
+//    NSArray *findPath = [[apf findPathFromSrc:srcNode toDest:destNode] retain];
+    NSArray *findPath = [[apf findPathFromOrigin:self.position toDestination:destination] retain];
+    
     [_path removeAllObjects];
     [_path addObjectsFromArray:findPath];
     
-    //    _pathIndex = _path.count;
-    _aimPos = [self nextPosition];
+    [self moveToNextPosition];
     self.rotation = [self cocosAngleFromPos:self.position toPos:_aimPos];
 }
 
@@ -62,7 +64,7 @@
     [self setDestination:position];
 }
 
-- (CGPoint)nextPosition
+- (void)moveToNextPosition
 {
     if (_path.count != 0) {
         _isMoving = YES;
@@ -71,13 +73,13 @@
         if (node.state == kStatePassable) {
             nextCoord = node.coord;
             [_path removeLastObject];
+            CGPoint nextPos = [[MapManager sharedMapManager] positionForTileCoordCenter:nextCoord];
+            _aimPos = nextPos;
         }
-        CGPoint nextPos = [[MapManager sharedMapManager] positionForTileCoordCenter:nextCoord];
-        return nextPos;
+        
     } else {
         _isMoving = NO;
     }
-    return CGPointZero;
 }
 
 - (void)update:(ccTime)dt
@@ -86,32 +88,30 @@
         return;
     }
     CGPoint vector = ccpSub(_aimPos, self.position);
-    //    CGFloat radian = ccpToAngle(vector);
-    //    CGFloat cocosAngle = CC_RADIANS_TO_DEGREES(-1 * radian);
+//    CGFloat radian = ccpToAngle(vector);
+//    CGFloat cocosAngle = CC_RADIANS_TO_DEGREES(-1 * radian);
     float distance = ccpDistance(_aimPos, self.position);
+//    distance = floor(distance);
+//    distance = ceilf(distance);
     float stepDis = _speed * dt;
     CGPoint speedVector = CGPointZero;
-    if (distance < stepDis) {
+    if (distance <= stepDis) {
         self.position = _aimPos;
-        CGPoint aimPos = [self nextPosition];
-        if (!CGPointEqualToPoint(aimPos, CGPointZero)) {
-            _aimPos = aimPos;
+        [self moveToNextPosition];
+        if (!CGPointEqualToPoint(self.position, _destination)) {
             self.rotation = [self cocosAngleFromPos:self.position toPos:_aimPos];
         }
         
-    } else {
-        if (fabs(vector.x) <= stepDis) {
-            speedVector.y = vector.y / fabs(vector.y) * stepDis;
-        } else if (fabs(vector.y) <= stepDis) {
-            speedVector.x = vector.x / fabs(vector.x) * stepDis;
-        } else {
-            speedVector.x = vector.x / distance * stepDis;
-            speedVector.y = vector.y / distance * stepDis;
-        }
-    }
-    
+        return; 
+    }  
+    speedVector.x = vector.x / distance * stepDis;
+    speedVector.y = vector.y / distance * stepDis;
+
+//    self.rotation = cocosAngle;
+//    self.rotation = [self cocosAngleFromPos:self.position toPos:_aimPos];
     CGPoint tempPos = ccpAdd(self.position, speedVector);
     self.position = tempPos;
+    
 }
 
 - (void)move:(ccTime)dt
@@ -125,6 +125,10 @@
     CGPoint vector = ccpSub(to, from);
     CGFloat radian = ccpToAngle(vector);
     CGFloat cocosAngle = CC_RADIANS_TO_DEGREES(-1 * radian);
+    
+//    if (fabsf(cocosAngle) != 180 && fabsf(cocosAngle) != 135 && fabsf(cocosAngle) != 90 && fabsf(cocosAngle) != 45 && fabsf(cocosAngle) != 0) {
+//        NSLog(@"anlge:%.3f", cocosAngle);
+//    }
     return cocosAngle;
 }
 

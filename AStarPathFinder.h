@@ -25,8 +25,8 @@
 
 + (AStarPathFinder *)sharedPathFinder;
 - (NSArray *)findPathFromSrc:(AStarMapNode *)srcNode toDest:(AStarMapNode *)destNode; // Retrieve Paths contain AStarMapNodes from end node to begin node.
-- (NSArray *)findPathForObject:(MoveObject *)object toDest:(AStarMapNode *)destNode;
-
+//- (NSArray *)findPathForObject:(MoveObject *)object toDest:(AStarMapNode *)destNode;
+- (NSArray *)findPathFromOrigin:(CGPoint)origin toDestination:(CGPoint)destination;
 
 
 @end

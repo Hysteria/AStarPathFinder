@@ -70,7 +70,7 @@ static AStarPathFinder *sharedInstance = nil;
 //    _set.openList->insert(srcNode);
     
     AStarMapNode *mapNode = nil;
-    
+    AStarMapNode *mapNodes[8];
     while (_openList.count > 0) {
 //    while (!_set.openList->empty()) {
     
@@ -87,6 +87,7 @@ static AStarPathFinder *sharedInstance = nil;
             break;
         }
         
+        /*
         NSMutableArray *mapNodes = [NSMutableArray arrayWithCapacity:8];
         AStarMapNode *tmpNode = nil;
         tmpNode = [_map mapNodeWithCoord:ccp(mapNode.coord.x-1, mapNode.coord.y)]; //West
@@ -105,12 +106,22 @@ static AStarPathFinder *sharedInstance = nil;
         [mapNodes addObject:tmpNode?tmpNode:[NSNull null]]; 
         tmpNode = [_map mapNodeWithCoord:ccp(mapNode.coord.x+1, mapNode.coord.y-1)]; //NorthEast
         [mapNodes addObject:tmpNode?tmpNode:[NSNull null]]; 
-
-    
+         */
+        mapNodes[0] = [_map mapNodeWithCoord:ccp(mapNode.coord.x-1, mapNode.coord.y)]; // West
+        mapNodes[1] = [_map mapNodeWithCoord:ccp(mapNode.coord.x+1, mapNode.coord.y)]; // East
+        mapNodes[2] = [_map mapNodeWithCoord:ccp(mapNode.coord.x, mapNode.coord.y+1)]; //South
+        mapNodes[3] = [_map mapNodeWithCoord:ccp(mapNode.coord.x, mapNode.coord.y-1)]; //North
+        mapNodes[4] = [_map mapNodeWithCoord:ccp(mapNode.coord.x-1, mapNode.coord.y+1)]; //SouthWest
+        mapNodes[5] = [_map mapNodeWithCoord:ccp(mapNode.coord.x+1, mapNode.coord.y+1)]; //SouthEast
+        mapNodes[6] = [_map mapNodeWithCoord:ccp(mapNode.coord.x-1, mapNode.coord.y-1)]; //NorthWest
+        mapNodes[7] = [_map mapNodeWithCoord:ccp(mapNode.coord.x+1, mapNode.coord.y-1)]; //NorthEast
+        
         AStarMapNode *tempNode = nil;
         for (int i = 0; i < 8; i++) {
-            tempNode = [mapNodes objectAtIndex:i];
-            if ([tempNode isEqual:[NSNull null]]) {
+//            tempNode = [mapNodes objectAtIndex:i];
+            tempNode = mapNodes[i];
+//            if ([tempNode isEqual:[NSNull null]]) {
+            if (!tempNode) {
                 continue;
             }
             
@@ -130,7 +141,7 @@ static AStarPathFinder *sharedInstance = nil;
                     [_openList removeObject:tempNode];
 //                    _set.openList->erase(tempNode);
                     tempNode.AStarInfo.g = tempG;
-                    tempNode.AStarInfo.h = ccpDistance(tempNode.coord, mapNode.coord);
+                    tempNode.AStarInfo.h = ccpDistance(tempNode.coord, destNode.coord);
                     tempNode.AStarInfo.f = tempNode.AStarInfo.g + tempNode.AStarInfo.h;
                     tempNode.AStarInfo.parent = mapNode;
                     [_openList addObject:tempNode];
@@ -140,7 +151,7 @@ static AStarPathFinder *sharedInstance = nil;
             // Node is not in closeList nor openList
             else {
                 tempNode.AStarInfo.g = tempG;
-                tempNode.AStarInfo.h = ccpDistance(tempNode.coord, mapNode.coord);
+                tempNode.AStarInfo.h = ccpDistance(tempNode.coord, destNode.coord);
                 tempNode.AStarInfo.f = tempNode.AStarInfo.g + tempNode.AStarInfo.h;
                 tempNode.AStarInfo.parent = mapNode;
                 [_openList addObject:tempNode];
@@ -149,7 +160,7 @@ static AStarPathFinder *sharedInstance = nil;
         }
        
 //        int ot = clock();
-//        [_openList sortUsingSelector:@selector(compareAStarF:)];
+        [_openList sortUsingSelector:@selector(compareAStarF:)];
 //        CCLOG(@"sort cost:%d", clock()-ot);
     } 
     
@@ -164,17 +175,28 @@ static AStarPathFinder *sharedInstance = nil;
     while (![mapNode isEqual:srcNode]) {
         [path addObject:mapNode];
         mapNode = mapNode.AStarInfo.parent;
+//        if (!mapNode) {
+//            break;
+//        }
     }
     
-
     [_map resetAStarInfos];
-    
     
     [_openList removeAllObjects];
     [_closeList removeAllObjects];
 //    [_set reset];
     
     return [[path copy] autorelease];
+}
+
+- (NSArray *)findPathFromOrigin:(CGPoint)origin toDestination:(CGPoint)destination
+{
+    CGPoint srcCoord = [[MapManager sharedMapManager] tileCoordForPosition:origin];
+    AStarMapNode *srcNode = [[AStarPathFinder sharedPathFinder].map mapNodeWithCoord:srcCoord];
+    CGPoint destCoord = [[MapManager sharedMapManager] tileCoordForPosition:destination];
+    AStarMapNode *destNode = [[AStarPathFinder sharedPathFinder].map mapNodeWithCoord:destCoord];
+    
+    return [self findPathFromSrc:srcNode toDest:destNode];
 }
 
 - (NSArray *)findPathForObject:(MoveObject *)object toDest:(AStarMapNode *)destNode

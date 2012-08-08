@@ -43,8 +43,10 @@ typedef enum {
 
 @interface AStarMap : NSObject
 {
-    NSMutableArray *_mapInfos;
-    NSMutableArray *_AStarInfos;
+//    NSMutableArray *_mapInfos;
+//    NSMutableArray *_AStarInfos;
+    AStarMapNode ***_mapInfos;
+    AStarNodeInfo **_AStarInfos;
     CGSize _mapSize;
     CGSize _tileSizeInPixels;
     int _nodeSum;
